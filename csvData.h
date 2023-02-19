@@ -345,7 +345,7 @@ void csvData::divideArquivo(int &numeroArquivos) {
         arquivo.seekg(0, ios::end);
         int numeroDados = arquivo.tellg() / sizeof(csvData);
         arquivo.seekg(sizeof(csvData), ios::beg);
-        numeroArquivos = numeroDados / 50000;
+        numeroArquivos = (numeroDados / 50000) + 1;
         //cria os arquivos
         for (int i = 0; i < numeroArquivos; i++) {
             ofstream arquivo;
@@ -354,7 +354,8 @@ void csvData::divideArquivo(int &numeroArquivos) {
         }
         //le os dados do arquivo original e escreve nos arquivos menores
         for (int i = 0; i < numeroArquivos; i++) {
-            for (int j = 0; j < 50000; j++) {
+            int j = 0;
+            while(arquivo.good() && j < 50000) {
                 csvData dado;
                 arquivo.read((char*)&dado, sizeof(csvData));
                 ofstream arquivo;
@@ -365,6 +366,7 @@ void csvData::divideArquivo(int &numeroArquivos) {
                 } else {
                     cout << "Erro ao abrir o arquivo auxiliar: " << i << endl;
                 }
+                j++;
             }
         }
         arquivo.close();
@@ -492,7 +494,7 @@ void csvData::mesclaArquivos(int numeroArquivos) {
         csvData menor;
         int indiceMenor = -1;
         for (int i = 0; i < numeroArquivos; i++) {
-            if (indices[i] < 50000) {
+            if (indices[i] < 50000 && arquivos[i].good()) {
                 arquivosAbertos = true;
                 csvData aux;
                 arquivos[i].seekg(indices[i] * sizeof(csvData), ios::beg);
@@ -541,7 +543,7 @@ void csvData::mergeSortExterno() {
     int numeroArquivos;
     divideArquivo(numeroArquivos);
     if (numeroArquivos > 1) {
-        ordenaArquivos(numeroArquivos, 0, 99);
+        ordenaArquivos(numeroArquivos, 0, 49999);
         mesclaArquivos(numeroArquivos);
         for (int i = 0; i < numeroArquivos; i++)
             remove(("data_athlete_event" + to_string(i) + ".bin").c_str());
