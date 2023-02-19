@@ -338,6 +338,7 @@ void csvData::leDado() {
 
 void csvData::divideArquivo(int &numeroArquivos) {
     //esse metodo vai dividir o arquivo data_athlete_event.bin em varios arquivos menores
+    cout << "Dividindo o arquivo..." << endl;
     ifstream arquivo;
     arquivo.open("data_athlete_event.bin", ios::binary);
     if (arquivo.is_open()) {
@@ -437,6 +438,9 @@ void csvData::ordenaArquivos(int numeroArquivos, int inicio, int fim) {
     //esse metodo vai ordenar os arquivos auxiliares
     csvData *vetor = new csvData[50000];
     for (int i = 0; i < numeroArquivos; i++) {
+        for (int j = 0; j < 50000; j++) {
+            vetor[j].limpaDados();
+        }
         ifstream arquivo;
         arquivo.open("data_athlete_event" + to_string(i) + ".bin", ios::binary);
         if (arquivo.is_open()) {
@@ -453,7 +457,9 @@ void csvData::ordenaArquivos(int numeroArquivos, int inicio, int fim) {
                 //escrever o vetor ordenado no arquivo
                 arquivo.seekp(0, ios::beg);
                 for (int j = 0; j < 50000; j++) {
-                    arquivo.write((char*)&vetor[j], sizeof(csvData));
+                    if (vetor[j].city[0] != '\0') {
+                        arquivo.write((char*)&vetor[j], sizeof(csvData));
+                    }
                 }
                 arquivo.close();
                 cout << "Arquivo " << i << " ordenado!" << endl;
@@ -494,7 +500,10 @@ void csvData::mesclaArquivos(int numeroArquivos) {
         csvData menor;
         int indiceMenor = -1;
         for (int i = 0; i < numeroArquivos; i++) {
-            if (indices[i] < 50000 && arquivos[i].good()) {
+            arquivos[i].seekg(0, ios::end);
+            int tamanho = arquivos[i].tellg() / sizeof(csvData);
+            arquivos[i].seekg(0, ios::beg);
+            if (indices[i] < tamanho) {
                 arquivosAbertos = true;
                 csvData aux;
                 arquivos[i].seekg(indices[i] * sizeof(csvData), ios::beg);
